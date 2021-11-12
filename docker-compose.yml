@@ -1,0 +1,49 @@
+version: '3.1'
+services:
+  backend:
+    image: backend:v1
+    restart: always
+    build:
+      context: backend/.
+    ports:
+      - 8080:8080
+
+  frontend:
+    image: frontend:v1
+    restart: always
+    build:
+      context: frontend/.
+    ports:
+      - 8081:8080
+    depends_on:
+      - backend
+    links:
+      - backend:backend
+
+  rproxy:
+    image: rproxy:v1
+    restart: always
+    build:
+      context: rproxy/.
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+    links:
+      - frontend:frontend
+
+  attacker:
+    image: attacker:v1
+    restart: always
+    build:
+      context: attacker/.
+    ports:
+      - 90:80
+    depends_on:
+      - frontend
+      - backend
+      - rproxy
+    links:
+      - backend:backend
+      - frontend:frontend
+      - rproxy:rproxy
